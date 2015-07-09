@@ -1,0 +1,12 @@
+{% extends "powermap/base.html" %}
+{% load staticfiles %}
+{% block content %}
+<div class="container">
+  <div class="jumbotron">
+    <h1>Registration Successful!</h1>
+    <p><a class="btn btn-primary btn-lg" href="{% url 'index' %}" role="button">Return to Map</a>
+    <a class="btn btn-primary btn-lg" href="{% url 'login_user' %}" role="button">Log In</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
