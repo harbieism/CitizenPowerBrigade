@@ -31,5 +31,12 @@ urlpatterns = [
         name='set_active'
     ),
     url(r'^logout/$', views.logout_view, name='logout'),
-    url(r'^login_user/$', views.login_user, name='login_user')
+    url(r'^login_user/$', views.login_user, name='login_user'),
+    url(r'^cars/register_car/$', views.register_car, name='register_car'),
+    url(
+        r'^cars/register_success/$',
+        views.register_success,
+        name='register_success'
+    )
+
 ]

@@ -1,4 +1,10 @@
-from powermap.forms import HelpNoteModelForm, NextLocationForm
+from powermap.forms import (
+    HelpNoteModelForm,
+    NextLocationForm,
+    PowerCarModelForm,
+    UserModelForm
+)
+
 from powermap.models import PowerCar, HelpNote
 
 from datetime import datetime
@@ -108,7 +114,8 @@ class PowerCarViewSet(viewsets.ModelViewSet):
         A route to change the next_location of a PowerCar,
         as well as its ETA and time at current location.
         """
-        car = self.get_object()
+        print pk
+        car = get_object_or_404(PowerCar, id=pk)
         partial_update = {}
         now = timezone.now().tzinfo
         partial_update["next_location"] = Point(
@@ -359,3 +366,39 @@ def next_location_popup(request, *args, **kwargs):
             json.dumps(response_data),
             content_type="application/json"
         )
+
+
+def register_success(request):
+    return render(request, "powermap/register_success.html")
+
+
+def register_car(request, *args, **kwargs):
+    if request.method == "GET":
+        user_form = UserModelForm()
+        car_form = PowerCarModelForm()
+        context = {
+            "user_form": user_form,
+            "car_form": car_form
+        }
+        return render(request, 'powermap/register_car.html', context)
+    if request.method == "POST":
+        user_form = UserModelForm(request.POST)
+        car_form = PowerCarModelForm(request.POST)
+        if user_form.is_valid() and car_form.is_valid():
+            print request.POST
+            user = user_form.save()
+            user.set_password(user.password)
+            user.save()
+            car = car_form.save(commit=False)
+            car.owner = user
+            car.current_location = Point(45.0, 45.0)
+            car.next_location = Point(45.0, 45.0)
+            car.target_location = Point(45.0, 45.0)
+            car.save()
+            return redirect("register_success")
+        else:
+            context = {
+                "user_form": user_form,
+                "car_form": car_form
+            }
+            return render(request, 'powermap/register_car.html', context)

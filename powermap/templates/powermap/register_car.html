@@ -1,0 +1,11 @@
+{% extends "powermap/base.html" %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container">
+  <form action="/pttp/cars/register_car/" class="bootstrap" method="post">
+    {% crispy user_form %}
+    {% crispy car_form %}
+  </form>
+</div>
+{% endblock %}
