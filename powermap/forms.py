@@ -2,7 +2,8 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, ButtonHolder, Submit, Field, Div
 from django import forms
 from django.utils.translation import gettext as _
-from powermap.models import HelpNote
+from django.contrib.auth.models import User
+from powermap.models import HelpNote, PowerCar
 
 
 class HelpNoteModelForm(forms.ModelForm):
@@ -90,3 +91,51 @@ class NextLocationForm(forms.Form):
                 Submit('submit', 'Submit', css_class='button white')
             )
         )
+
+
+class UserModelForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(UserModelForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            'username',
+            'first_name',
+            'last_name',
+            'password'
+        )
+
+    class Meta:
+        model = User
+        fields = [
+            'username',
+            'first_name',
+            'last_name',
+            'password'
+        ]
+        widgets = {
+            'password': forms.PasswordInput()
+        }
+
+
+class PowerCarModelForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(PowerCarModelForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            'name',
+            'vehicle_description',
+            'license_plate',
+            ButtonHolder(
+                Submit('submit', 'Submit', css_class='button white')
+            )
+        )
+
+    class Meta:
+        model = PowerCar
+        fields = [
+            'name',
+            'vehicle_description',
+            'license_plate'
+        ]
