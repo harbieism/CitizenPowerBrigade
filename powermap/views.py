@@ -22,6 +22,7 @@ from twilio_utils import send_alerts
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import list_route, detail_route
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from custom_permissions import IsAdminOrCarOwner, WriteOnlyOrUser
@@ -49,6 +50,7 @@ class PowerCarViewSet(viewsets.ModelViewSet):
     users = User.objects.filter(id__in=uid_list)
     queryset = PowerCar.objects.filter(owner__in=users)
     serializer_class = PowerCarSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     @list_route()
     def other_active_cars(self, request):
@@ -113,13 +115,11 @@ class PowerCarViewSet(viewsets.ModelViewSet):
         """
         Allows a car to update its current location via a POST request.
         """
-        try:
-            car = PowerCar.objects.get(id=pk)
-        except PowerCar.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
         if request.method == 'POST':
-            car = self.get_object()
+            try:
+                car = PowerCar.objects.get(id=pk)
+            except PowerCar.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
             serializer = PowerCarSerializer(
                 car,
                 data=request.data,
