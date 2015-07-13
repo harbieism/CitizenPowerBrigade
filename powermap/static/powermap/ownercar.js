@@ -167,11 +167,10 @@ if (isAuth) {
     navigator.geolocation.getCurrentPosition(function(position) {
       var csrftoken = $.cookie('csrftoken');
       var postData = {
-        'lat': position.coords.latitude,
-        'lng': position.coords.longitude,
+        'current_location': "POINT(" + position.coords.longitude + " " + position.coords.latitude + ")",
         'csrfmiddlewaretoken': csrftoken,
       };
-      var postURL = "/pttp/cars/" + self.car.id + "/update_current_location/";
+      var postURL = "/powercars/" + self.car.id + "/update_current_location/";
       $.post(postURL, postData, function(response) {
         $.get(self.dataSource, function(data) {
           console.log(data);

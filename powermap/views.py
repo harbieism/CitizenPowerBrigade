@@ -20,7 +20,7 @@ from django.utils import timezone
 from twilio_utils import send_alerts
 
 
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import list_route, detail_route
 from rest_framework.response import Response
 
@@ -109,12 +109,36 @@ class PowerCarViewSet(viewsets.ModelViewSet):
         return JsonResponse(content)
 
     @detail_route(methods=['post'], permission_classes=[IsAdminOrCarOwner])
+    def update_current_location(self, request, pk=None):
+        """
+        Allows a car to update its current location via a POST request.
+        """
+        try:
+            car = PowerCar.objects.get(id=pk)
+        except PowerCar.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == 'POST':
+            car = self.get_object()
+            serializer = PowerCarSerializer(
+                car,
+                data=request.data,
+                partial=True
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @detail_route(methods=['post'], permission_classes=[IsAdminOrCarOwner])
     def change_next_location(self, request, pk=None):
         """
         A route to change the next_location of a PowerCar,
         as well as its ETA and time at current location.
         """
-        print pk
         car = get_object_or_404(PowerCar, id=pk)
         partial_update = {}
         now = timezone.now().tzinfo
@@ -293,7 +317,6 @@ def get_other_cars(request):
         uid_list.append(data.get('_auth_user_id', None))
     uid = request.user.id
     users = User.objects.filter(id__in=uid_list).exclude(id=uid)
-    print users
     queryset = PowerCar.objects.filter(owner__in=users, active=True)
     serializer = PowerCarMinSerializer(queryset, many=True)
     return JsonResponse(serializer.data)
@@ -385,7 +408,6 @@ def register_car(request, *args, **kwargs):
         user_form = UserModelForm(request.POST)
         car_form = PowerCarModelForm(request.POST)
         if user_form.is_valid() and car_form.is_valid():
-            print request.POST
             user = user_form.save()
             user.set_password(user.password)
             user.save()
