@@ -40,7 +40,7 @@ class HelpNote(models.Model):
 
 class Diagnostic(models.Model):
     # An onboard diagnostic log.
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(auto_now_add=True)
     coolant_temp = models.DecimalField(max_digits=6, decimal_places=2)
     fuel_gage = models.DecimalField(max_digits=5, decimal_places=2)
     lv_batt_volts = models.DecimalField(max_digits=6, decimal_places=2)
