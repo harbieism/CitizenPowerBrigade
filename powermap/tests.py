@@ -1,9 +1,11 @@
 from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import AnonymousUser, User
-from models import HelpNote
+from models import HelpNote, PowerCar
 
-from serializers import HelpNoteSerializer
+from datetime import datetime
+
+from serializers import HelpNoteSerializer, PowerCarSerializer
 from rest_framework.test import (
     APIRequestFactory,
     APITestCase,
@@ -14,7 +16,8 @@ import json
 from forms import HelpNoteModelForm
 from django.contrib.gis.geos import Point, GEOSGeometry
 
-from .views import HelpNoteViewSet
+from .views import HelpNoteViewSet, PowerCarViewSet
+
 
 class HelpNoteTest(TestCase):
     """
@@ -149,3 +152,77 @@ class HelpNoteViewSetTest(APITestCase):
         }
 
         self.assertEqual(response.content, json.dumps(correct_dictionary))
+
+
+class PowerCarViewSetTest(APITestCase):
+    """
+    Test the results and authentication of the
+    PowerCarViewSet
+    """
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = User.objects.create_user(
+            username='jacob', email='jacob@cool.com', password='x'
+        )
+        self.demo_post_data = {
+            'name': "NewTestCar",
+            "vehicle_description": "red car",
+            'license_plate': 'ABC001',
+            'current_location': 'POINT(45.50 55.50)',
+            'target_location': 'POINT(46.50 56.50)',
+            'next_location': 'POINT(47.50 48.0)',
+            'active': True,
+            "owner": self.user.id,
+            "eta": "2015-07-13T17:35:28.871531Z",
+            "current_location_until": "2015-07-13T17:35:28.871531Z"
+        }
+        self.car = PowerCar.objects.create(
+            name="TestCar",
+            vehicle_description="A Test Car",
+            license_plate="ABC001",
+            current_location=Point(45.50, 55.50),
+            target_location=Point(65.0, 55.0),
+            next_location=Point(55.0, 45.0),
+            active=True,
+            owner=self.user
+        )
+
+    def test_list(self):
+        """
+        Tests the list API endpoint for PowerCarViewSet
+        """
+        url = reverse('powercar-list')
+        factory = APIRequestFactory()
+
+        # Test if an unathenticated request can access the PowerCar list
+        # PowerCars are publically accesible, so the response
+        # code should be ok
+        user = AnonymousUser()
+        view = PowerCarViewSet.as_view({'get': 'list'})
+        request = factory.get(url)
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+
+        # Test if an unauthenticated request can POST data to create
+        # a PowerCar.
+        request = factory.post(
+            url,
+            self.demo_post_data
+        )
+        view = PowerCarViewSet.as_view({'post': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 403)
+
+        # Test if an authenticated request can access the PowerCar list
+        # PowerCars are publically accessible, so the response code
+        # should be ok.
+        post_demo_data = PowerCarSerializer(self.car)
+        request = factory.post(
+            url,
+            post_demo_data,
+            content_type="application/json"
+        )
+        force_authenticate(request, user=self.user)
+        view = PowerCarViewSet.as_view({'post': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
