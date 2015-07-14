@@ -5,7 +5,7 @@ from powermap.forms import (
     UserModelForm
 )
 
-from powermap.models import PowerCar, HelpNote
+from powermap.models import PowerCar, HelpNote, Diagnostic
 
 from datetime import datetime
 
@@ -22,7 +22,10 @@ from twilio_utils import send_alerts
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import list_route, detail_route
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    IsAuthenticatedOrReadOnly,
+    IsAuthenticated
+)
 from rest_framework.response import Response
 
 from custom_permissions import IsAdminOrCarOwner, WriteOnlyOrUser
@@ -31,9 +34,20 @@ from serializers import (
     PowerCarMinSerializer,
     UserSerializer,
     HelpNoteSerializer,
+    DiagnosticSerializer
 )
 
 import json
+
+
+class DiagnosticViewSet(viewsets.ModelViewSet):
+    """
+    API Endpoint that allows for CRUD operations
+    on Diagnostics.
+    """
+    permissions_classes = (IsAuthenticated,)
+    queryset = Diagnostic.objects.all()
+    serializer_class = DiagnosticSerializer
 
 
 class PowerCarViewSet(viewsets.ModelViewSet):
