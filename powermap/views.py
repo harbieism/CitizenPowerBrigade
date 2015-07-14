@@ -278,21 +278,6 @@ def login_user(request):
     return render(request, 'powermap/login.html', {'form': form})
 
 
-def get_other_cars(request):
-    sessions = Session.objects.filter(expire_date__gte=timezone.now())
-    uid_list = []
-
-    # Build list of user IDs from session query.
-    for session in sessions:
-        data = session.get_decoded()
-        uid_list.append(data.get('_auth_user_id', None))
-    uid = request.user.id
-    users = User.objects.filter(id__in=uid_list).exclude(id=uid)
-    queryset = PowerCar.objects.filter(owner__in=users, active=True)
-    serializer = PowerCarMinSerializer(queryset, many=True)
-    return JsonResponse(serializer.data)
-
-
 def set_active(request, *args, **kwargs):
     response_data = {}
     if request.method == "POST":

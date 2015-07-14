@@ -16,11 +16,6 @@ urlpatterns = [
         name='next_location_popup'
     ),
     url(
-        r'^cars/get_other_cars/$',
-        views.get_other_cars,
-        name='get_other_cars'
-    ),
-    url(
         r'^cars/(?P<car_id>[0-9]+)/set_active/$',
         views.set_active,
         name='set_active'
