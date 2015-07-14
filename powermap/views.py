@@ -257,49 +257,6 @@ def note_popup(request, **kwargs):
     raise Http404
 
 
-def update_current_location(request, *args, **kwargs):
-    if request.method == "POST":
-        identified_user = get_object_or_404(User, pk=request.user.id)
-        user_car = get_object_or_404(PowerCar, owner=identified_user)
-        response_data = {}
-        car_id = kwargs.get('car_id')
-        if user_car.id != int(car_id):
-            return HttpResponse(
-                json.dumps({"result": "Cars don't match"}),
-                content_type="application/json"
-            )
-        lat = request.POST.get("lat")
-        lng = request.POST.get("lng")
-        new_point = Point(float(lng), float(lat))
-        car = get_object_or_404(PowerCar, pk=car_id)
-        already_at = car.at_next_location()
-        car.current_location = new_point
-        car.save()
-        response_data['arrived'] = False
-        if car.at_next_location():
-            response_data['arrived'] = True
-            if not already_at:
-                alert_notes = HelpNote.objects.filter(
-                    location__distance_lte=(car.next_location, 500)
-                )
-                alert_notes = alert_notes.exclude(phone_number="")
-                alert_numbers = [notes.phone_number for notes in alert_notes]
-                send_alerts(alert_numbers, car, "Arrival")
-        response_data['result'] = 'Change next successfully'
-        response_data['car_id'] = car_id
-
-        return HttpResponse(
-            json.dumps(response_data),
-            content_type="application/json"
-        )
-
-    else:
-        return HttpResponse(
-            json.dumps({"result": "Not successfull"}),
-            content_type="application/json"
-        )
-
-
 def logout_view(request):
     logout(request)
     return redirect('index')

@@ -21,11 +21,6 @@ urlpatterns = [
         name='get_other_cars'
     ),
     url(
-        r'^cars/(?P<car_id>[0-9]+)/update_current_location/$',
-        views.update_current_location,
-        name='update_current_location'
-    ),
-    url(
         r'^cars/(?P<car_id>[0-9]+)/set_active/$',
         views.set_active,
         name='set_active'
